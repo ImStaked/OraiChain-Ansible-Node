@@ -1,0 +1,51 @@
+---
+- name: Create the orai group
+  group:
+    name: "{{ _orai_validator_system_group }}"
+    state: present
+    system: true
+  when: _orai_validator_system_group != "root"
+
+- name: Create the orai user
+  user:
+    name: "{{ _orai_validator_system_user }}"
+    group: "{{ _orai_validator_system_group }}"
+    shell: /bin/bash
+    create_home: true
+    home: "{{ orai_HOME }}"
+  when: _orai_validator_system_user != "root"
+
+- name: Install gcc
+  ansible.builtin.package:
+    name: gcc
+    state: present
+- name: Prepare GO upgrade
+  file:
+    path: /usr/local/go
+    state: absent
+  tags:
+    - remove_go
+- name: Download GO latest
+  ansible.builtin.unarchive:
+    src: https://go.dev/dl/go1.24.2.linux-amd64.tar.gz
+    dest: /usr/local/
+    remote_src: yes
+  tags:
+    - go_download
+- name: Configure GO user env
+  blockinfile:
+    path: "{{ orai_HOME }}"/.bashrc
+    block: |
+      export GOROOT=/usr/local/go
+      export GOPATH="{{ orai_HOME }}"/go
+      export GO111MODULE=on
+  # Possibly have to add escape char 
+      export PATH=$PATH:/usr/local/go/bin:"{{ orai_HOME }}"/go/bin
+    backup: yes
+  tags:
+    - go_environment
+- name: source "{{ orai_HOME }}"/.bashrc
+  shell: source "{{ orai_HOME }}"/.bashrc
+  args:
+    executable: /bin/bash
+- debug: var=ldd.stdout_lines

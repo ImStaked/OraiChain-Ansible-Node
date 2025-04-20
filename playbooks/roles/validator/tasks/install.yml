@@ -1,0 +1,65 @@
+- name: Show facts available on the system
+  ansible.builtin.debug:
+    var: ansible_facts
+
+#- name: create a directory
+#  file:
+#    path: "{{ orai_HOME }}/example"
+#    state: directory
+#    owner: "{{ _orai_validator_system_user }}"
+#    group: "{{ _orai_validator_system_group }}"
+#    mode: 0744
+#- name: Download a file
+#  get_url:
+#    url:
+#    dest: /tmp/checksums
+#- name: parse the file for checksums
+#  shell: grep linux-amd64 /tmp/checksums | sed '/^$/d' | sed -r 's/stuff//g' | tail -n 1
+#  register: checksum
+#  tags: checksums
+
+#- name: Download binary
+#  get_url:
+#    url: 
+#    dest: "/tmp/oraid"
+#    owner: "{{ _orai_validator_system_user }}"
+#    group: "{{ _orai_validator_system_group }}"
+#    mode: u+rwx
+#    checksum: "sha256: {{ checksum.stdout }}"
+  #failed_when: checksum = "b528aff8b9e76c91b76b1288cdc15d13fed6b868d8ff3b74460ea2061bacea9b"
+#  register: _download_binary
+#  until: _download_binary is succeeded
+#  retries: 5
+#  delay: 2
+#  check_mode: false
+
+- name: clone wasmd repo
+  git:
+    repo: 'https://github.com/oraichain/wasmd'
+    dest: "{{ orai_HOME }}"/wasmd
+    version: "{{ wasmdversion }}"
+
+- name: Compile oraid binary
+  command: /usr/local/go/bin/go build
+  args:
+    chdir: /tmp/wasmd/
+    creates: /tmp/wasmd
+  tags: build
+
+#- name: get libwasmvm.so path to copy it later
+#  shell: "ldd /tmp/wasmd | grep libwasmvm.so | awk '{ print $3 }'"
+#  register: ldd
+#- debug: var=ldd.stdout_lines
+  #msg: ldd.stdout
+#- name: copy the libwasmvm.so libraries to /home/orai
+#  copy:
+#    src: "{{ ldd.stdout }}"
+#    dest: "{{ _orai_HOME }}"
+#    owner: "{{ _orai_validator_system_user }}"
+#    group: "{{ _orai_validator_system_group }}"
+#    mode: u+rw
+#    remote_src: yes
+#- name: add ld_library_path variable to bashrc
+#  lineinfile:
+#    path: "{{ _orai_HOME }}"/.bashrc
+#    line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"{{ _orai_HOME }}"/oraid

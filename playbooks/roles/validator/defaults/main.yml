@@ -1,0 +1,31 @@
+---
+# change as needed or preffered
+_orai_validator_system_group: "orai"
+_orai_validator_system_user: "{{ _orai_validator_system_group }}"
+
+orai_HOME: "/home/orai"
+orai_version: "v0.50.10"
+oraid_binary_location: "/home/orai/go/bin/oraid"
+
+# checksums
+orai_v0.50.09_sha256: ""
+orai_v0.50.10_sha256: ""
+genesis_sha1: ""
+
+# [config]
+admin_password: "******"
+moniker: "OraiNode"
+min_gas_prices: "0.001uorai"
+p2p_seeds: ""
+persistent_pers: ""
+
+#[generic]
+bech32_prefix: orai
+chain_id: Oraichain
+orai_version: v0.50.10
+local_checkout_dir: /tmp/orai
+#validator:
+#  admin_password: ******
+#  validator_binary_location: /home/orai/go/bin/oraid
+wasmdcommit:
+wasmdversion:

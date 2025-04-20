@@ -1,0 +1,26 @@
+---
+- name: Init oraid
+  command: "{{ oraid_binary_location|quote }} init {{ moniker|quote }} --chain-id {{ chain_id|quote }}"
+  args:
+    creates: "{{ orai_HOME }}/.oraid"
+  # skipping errors now for the ease of testing ... 
+  ignore_errors: yes
+  tags: initialize_node
+
+- name: Download genesis file
+  get_url:
+    url: https://raw.githubusercontent.com/oraichain/oraichain-static-files/master/genesis.json
+    dest: "{{ orai_HOME }}/.oraid/config/genesis.json"
+    mode: '0440'
+  tags: genesis_download
+
+- name: change genesis file ownership to orai:orai
+  file:
+    path: "{{ orai_HOME }}/.oraid/config/genesis.json"
+    mode: '0644'
+    owner: orai
+    group: orai
+  tags: genesis_download
+
+- name: validate the genesis file
+  command: ""{{ oraid_binary_location }}" validate-genesis"

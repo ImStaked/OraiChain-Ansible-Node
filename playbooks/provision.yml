@@ -1,0 +1,11 @@
+---
+- name: Provision
+  hosts: saturn
+  gather_facts: yes
+  become: yes
+  roles:
+    - log
+    - go_install
+    - validator
+  environment:
+    LD_LIBRARY_PATH: /home/orai

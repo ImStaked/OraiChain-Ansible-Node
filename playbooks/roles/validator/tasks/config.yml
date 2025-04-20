@@ -1,0 +1,57 @@
+---
+- name: Edit app.toml
+  replace:
+    path: "{{ orai_HOME }}"/.oraid/config/app.toml
+    regexp: 'minimum-gas-prices = ""'
+    replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
+  tags: app_edit
+
+- name: Edit config.toml
+  replace:
+    path: "{{ orai_HOME }}"/.oraid/config/config.toml
+    regexp: 'rpc_servers = ""'
+    replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://oraichain-mainnet-rpc.itrocket.net:443"'
+  tags: config_edit
+
+- name: add p2p-seeds
+  replace:
+    path: "{{ orai_HOME }}"/.oraid/config/config.toml
+    regexp: 'seeds = ""'
+    replace: 'seeds = "{{ p2p_seeds }}"'
+  tags: config_edit
+
+- name: Edit app.toml
+  replace:
+    path: "{{ orai_HOME }}"/.oraid/config/app.toml
+    regexp: 'enable = false'
+    replace: 'enable = true'
+  tags: app_edit
+
+#
+#- name: Create a new key
+#  expect:
+#    command: "{{ oriad_binary_location|quote }}/lol keys add admin"
+#    responses:
+#      'Enter keyring passphrase:': "{{ admin_password }}"
+#      'Re-enter keyring passphrase:': "{{ admin_password }}"
+#  register: admin_mnemonic
+
+#- name: recover key
+#  expect:
+#    command: "{{ oraid_binary_location|quote }} keys add admin --recover"
+#    responses:
+#      'Enter keyring passphrase:': "{{ admin_password }}"
+#      'Re-enter keyring passphrase:': "{{ admin_password }}"
+#      '> Enter your bip39 mnemonic': "{{ admin_mnemonic }}"
+#  ignore_errors: yes
+#  tags: fresh_node, import_admin_key
+
+#- name: get admin wallet address
+#  expect:
+#    echo: true
+#    command: "{{ oraid_binary_location }} keys show admin -a"
+#    responses:
+#      'Enter keyring passphrase:': "{{ admin_password }}"
+#  register: admin_address
+#  tags: get_admin_address
+
