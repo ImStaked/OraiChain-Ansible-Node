@@ -4,7 +4,11 @@ _orai_validator_system_group: "orai"
 _orai_validator_system_user: "{{ _orai_validator_system_group }}"
 
 orai_HOME: "/home/orai"
+config_toml_path: "/home/orai/.oraid/config/config.toml"
+app_toml_path: "/home/orai/.oraid/config/app.toml" 
+
 orai_version: "v0.50.10"
+oraid_binary_path: "/home/orai/go/bin"
 oraid_binary_location: "/home/orai/go/bin/oraid"
 
 # checksums

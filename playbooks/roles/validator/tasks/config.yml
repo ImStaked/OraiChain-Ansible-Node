@@ -1,31 +1,61 @@
 ---
-- name: Edit app.toml
+- name: Set min gas price
   replace:
-    path: "{{ orai_HOME }}"/.oraid/config/app.toml
+    path: "{{ app_toml_path }}"
     regexp: 'minimum-gas-prices = ""'
     replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
   tags: app_edit
 
-- name: Edit config.toml
+- name: Add p2p-seeds
   replace:
-    path: "{{ orai_HOME }}"/.oraid/config/config.toml
-    regexp: 'rpc_servers = ""'
-    replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://oraichain-mainnet-rpc.itrocket.net:443"'
-  tags: config_edit
-
-- name: add p2p-seeds
-  replace:
-    path: "{{ orai_HOME }}"/.oraid/config/config.toml
+    path: "{{ config_toml_path }}"
     regexp: 'seeds = ""'
     replace: 'seeds = "{{ p2p_seeds }}"'
   tags: config_edit
 
-- name: Edit app.toml
+- name: Configure Pruning
   replace:
-    path: "{{ orai_HOME }}"/.oraid/config/app.toml
-    regexp: 'enable = false'
-    replace: 'enable = true'
+    path: "{{ app_toml_path }}"
+    regexp: 'pruning = "default"''
+    replace: 'pruning = "custom"'
   tags: app_edit
+
+- name: Get block data
+  uri: 
+    url: https://oraichain-mainnet-rpc.itrocket.net:443/block
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: blockData
+  # failed_when: <optional condition based on JSON returned content>
+
+- name: Parse Response for block height
+  debug:
+    var: blockData.json[0].result.block.header.height
+  register: block_height
+
+- name: Get Trusted Hash
+  uri: 
+    url: https://oraichain-mainnet-rpc.itrocket.net:443/block?height="{{ block_height | int - 2000}}"
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: trustedHash
+  # failed_when: <optional condition based on JSON returned content>
+
+- name: Configure State Sync
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'rpc_servers = ""'
+    replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://oraichain-mainnet-rpc.itrocket.net:443"'
+    regexp: 'trust_height ='
+    replace: 'trust_height = "{{ block_height | int - 2000 | quote}}"'
+    regexp: 'trust_hash = ""'
+    replace: 'trust_hash = "{{ trustedHash | quote }}"'
+  tags: config_edit
+
 
 #
 #- name: Create a new key

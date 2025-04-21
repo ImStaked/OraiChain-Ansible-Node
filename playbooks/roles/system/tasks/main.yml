@@ -34,18 +34,17 @@
     - go_download
 - name: Configure GO user env
   blockinfile:
-    path: "{{ orai_HOME }}"/.bashrc
+    path: "{{ orai_HOME | quote }}"/.bashrc
     block: |
       export GOROOT=/usr/local/go
-      export GOPATH="{{ orai_HOME }}"/go
+      export GOPATH="{{ orai_HOME | quote}}"/go
       export GO111MODULE=on
-  # Possibly have to add escape char 
-      export PATH=$PATH:/usr/local/go/bin:"{{ orai_HOME }}"/go/bin
+      export PATH=$PATH:/usr/local/go/bin:"{{ orai_binary_path | quote}}"
     backup: yes
   tags:
     - go_environment
-- name: source "{{ orai_HOME }}"/.bashrc
-  shell: source "{{ orai_HOME }}"/.bashrc
+- name: source "{{ orai_HOME | quote}}"/.bashrc
+  shell: source "{{ orai_HOME | quote}}"/.bashrc
   args:
     executable: /bin/bash
 - debug: var=ldd.stdout_lines
