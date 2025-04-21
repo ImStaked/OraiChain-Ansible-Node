@@ -36,30 +36,14 @@
 - name: clone wasmd repo
   git:
     repo: 'https://github.com/oraichain/wasmd'
-    dest: "{{ orai_HOME }}"/wasmd
-    version: "{{ wasmdversion }}"
+    dest: "{{ orai_HOME }}"
+    version: "{{ orai_version }}"
 
 - name: Compile oraid binary
-  command: /usr/local/go/bin/go build
-  args:
-    chdir: /tmp/wasmd/
-    creates: /tmp/wasmd
-  tags: build
+  command: /usr/local/go/bin/go build -mod=readonly -tags "netgo,ledger" -ldflags '-X github.com/cosmos/cosmos-sdk/version.Name=orai -X github.com/cosmos/cosmos-sdk/version.AppName=oraid -X github.com/cosmos/cosmos-sdk/version.Version=0.50.10 -X github.com/cosmos/cosmos-sdk/version.Commit=4e1eea4b0ce0f0c94ace7beb0d3e816c9cb22807 -X github.com/CosmWasm/wasmd/app.Bech32Prefix=orai -X "github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger"' -trimpath -o build/oraid ./cmd/wasmd && mkdir -p /home/orai/go/bin && mv build/oraid /home/orai/go/bin/oraid
 
-#- name: get libwasmvm.so path to copy it later
-#  shell: "ldd /tmp/wasmd | grep libwasmvm.so | awk '{ print $3 }'"
-#  register: ldd
-#- debug: var=ldd.stdout_lines
-  #msg: ldd.stdout
-#- name: copy the libwasmvm.so libraries to /home/orai
-#  copy:
-#    src: "{{ ldd.stdout }}"
-#    dest: "{{ _orai_HOME }}"
-#    owner: "{{ _orai_validator_system_user }}"
-#    group: "{{ _orai_validator_system_group }}"
-#    mode: u+rw
-#    remote_src: yes
-#- name: add ld_library_path variable to bashrc
-#  lineinfile:
-#    path: "{{ _orai_HOME }}"/.bashrc
-#    line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"{{ _orai_HOME }}"/oraid
+  args:
+    chdir: "{{ orai_HOME }}"
+    creates: "{{ orai_HOME }}/"
+  tags: compile_and_install_binary
+

@@ -11,7 +11,7 @@ app_toml_path: "/home/orai/.oraid/config/app.toml"
 orai_version: "v0.50.10"
 oraid_binary_path: "/home/orai/go/bin"
 oraid_binary_location: "/home/orai/go/bin/oraid"
-
+golang_path: "/home/orai/go"
 # checksums
 orai_v0.50.09_sha256: "7783b18b8a9542fa0ede2889836e0f5cbbd12acaeba297fe0f2afb0f6455d5bc"
 orai_v0.50.10_sha256: "e718c5ba7a05e86e248d06ec4bed68c1d448f125a31a2551b1f997d1ab3d3e2d"
