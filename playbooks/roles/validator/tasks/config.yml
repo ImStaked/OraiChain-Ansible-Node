@@ -1,24 +1,28 @@
 ---
-- name: Set min gas price
-  replace:
-    path: "{{ app_toml_path }}"
-    regexp: 'minimum-gas-prices = ""'
-    replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
-  tags: app_edit
+- name: Update app.toml
+  copy:
+    src: templates/app.toml.j2
+    dest: "{{ app_toml_path }}"
+    owner: orai
+    group: orai
+    mode: u+rw
+  tags: replace_app.toml
 
-- name: Add p2p-seeds
-  replace:
-    path: "{{ config_toml_path }}"
-    regexp: 'seeds = ""'
-    replace: 'seeds = "{{ p2p_seeds }}"'
-  tags: config_edit
+- name: Update config.toml
+  copy:
+    src: templates/config.toml.j2
+    dest: "{{ config_toml_path }}"
+    owner: orai
+    group: orai
+    mode: u+rw
+  tags: replace_config.toml
 
-- name: Configure Pruning
-  replace:
-    path: "{{ app_toml_path }}"
-    regexp: 'pruning = "default"''
-    replace: 'pruning = "custom"'
-  tags: app_edit
+- name: Get wasm data
+  ansible.builtin.unarchive:
+    src: https://snapshots.polkachu.com/wasm/orai/orai_wasmonly.tar.lz4
+    dest: "{{ oraid_HOME }}"
+    remote_src: yes
+  tags: wasm_download
 
 - name: Get block data
   uri: 
@@ -29,11 +33,13 @@
     body_format: json
   register: blockData
   # failed_when: <optional condition based on JSON returned content>
+  tags: get_latest_block_data
 
 - name: Parse Response for block height
   debug:
     var: blockData.json[0].result.block.header.height
   register: block_height
+  tags: get_latest_block_height
 
 - name: Get Trusted Hash
   uri: 
@@ -44,17 +50,18 @@
     body_format: json
   register: trustedHash
   # failed_when: <optional condition based on JSON returned content>
+  tags: get_trusted_hash
 
 - name: Configure State Sync
   replace:
     path: "{{ config_toml_path }}"
     regexp: 'rpc_servers = ""'
-    replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://oraichain-mainnet-rpc.itrocket.net:443"'
+    replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://orai-rpc.polkachu.com:443,https://rpc-orai.blockval.io:443"'
     regexp: 'trust_height ='
     replace: 'trust_height = "{{ block_height | int - 2000 | quote}}"'
     regexp: 'trust_hash = ""'
-    replace: 'trust_hash = "{{ trustedHash | quote }}"'
-  tags: config_edit
+    replace: 'trust_hash = ""{{ trustedHash | quote }}""'
+  tags: configure_state_sync
 
 
 #
@@ -85,3 +92,27 @@
 #  register: admin_address
 #  tags: get_admin_address
 
+#- name: Set min gas price
+#  replace:
+#    path: "{{ app_toml_path }}"
+#    regexp: 'minimum-gas-prices = ""'
+#    replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
+#  tags: configure_gas_price
+
+#- name: Add p2p-seeds
+#  replace:
+#    path: "{{ config_toml_path }}"
+#    regexp: 'seeds = ""'
+#    replace: 'seeds = "{{ p2p_seeds }}"'
+#  tags: add_seeds
+
+#- name: Configure Pruning
+#  replace:
+#    path: "{{ app_toml_path }}"
+#    regexp: 'pruning = "default"''
+#    replace: 'pruning = "custom"'
+#    regexp: pruning-keep-recent = ""
+#    replace: pruning-keep-recent = "25000"
+#    regexp: pruning-interval = ""
+#    replace: pruning-interval = "10"
+#  tags: configure_custom_pruning
