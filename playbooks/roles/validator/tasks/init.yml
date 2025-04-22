@@ -1,6 +1,6 @@
 ---
 - name: Install cosmovissor
-  command: /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
+  command: /usr/local/go/bin/go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.5.0
   become: true
   become_user: orai
   args:
