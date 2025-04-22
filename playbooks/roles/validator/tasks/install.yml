@@ -6,7 +6,7 @@
       export ORAI_HOME="{{ orai_HOME | quote }}"
       export DAEMON_NAME=oraid
       export DAEMON_HOME="{{ oraid_HOME | quote }}"
-      export DAEMON_ALLOW_DOWNLOAD_BINARIES=false
+      export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
       export DAEMON_RESTART_AFTER_UPGRADE=true
       export UNSAFE_SKIP_BACKUP=true
       export GOROOT=/usr/local/go
