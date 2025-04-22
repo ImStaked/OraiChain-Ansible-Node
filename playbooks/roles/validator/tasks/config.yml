@@ -20,7 +20,7 @@
 - name: Create upgrade-info.json
   copy:
     src: templates/upgrade_info.json.j2
-    dest: "{{ oraid_HOME }}/data"
+    dest: "{{ oraid_HOME }}/data/upgrade_info.json"
     owner: orai
     group: orai
     mode: u+rw
@@ -131,7 +131,7 @@
   replace:
     path: "{{ config_toml_path }}"
     regexp: 'prometheus = false'
-    replace: 'prometheus = "{{ enable_prometheus | lower }}"'
+    replace: 'prometheus = {{ enable_prometheus | lower }}'
   tags: configure_metrics
 
 - name: Configure metrics listen address

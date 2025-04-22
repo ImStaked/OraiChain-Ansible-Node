@@ -30,7 +30,7 @@ prometheus_listen_addr: "127.0.0.1:26660"
 #[generic]
 bech32_prefix: orai
 chain_id: Oraichain
-orai_version: v0.50.10
+orai_version: v0.50.9
 local_checkout_dir: /tmp/orai
 wasmdcommit:
 wasmdversion:
