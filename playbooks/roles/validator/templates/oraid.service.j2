@@ -7,7 +7,7 @@ After=network-online.target
 User=orai
 Group=orai
 Type=simple
-ExecStart=/home/orai/go/bin/oraid start 
+ExecStart=/home/orai/go/bin/cosmovisor run start --home /home/orai/.oraid
 Environment="ORAI_HOME=/home/orai"
 Environment="DAEMON_NAME=oraid"
 Environment="DAEMON_HOME=/home/orai/.oraid"

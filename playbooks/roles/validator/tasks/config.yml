@@ -1,22 +1,4 @@
 ---
-- name: Update app.toml
-  copy:
-    src: templates/app.toml.j2
-    dest: "{{ app_toml_path }}"
-    owner: orai
-    group: orai
-    mode: u+rw
-  tags: replace_app.toml
-
-- name: Update config.toml
-  copy:
-    src: templates/config.toml.j2
-    dest: "{{ config_toml_path }}"
-    owner: orai
-    group: orai
-    mode: u+rw
-  tags: replace_config.toml
-
 - name: Create upgrade-info.json
   copy:
     src: templates/upgrade_info.json.j2
@@ -54,7 +36,7 @@
 - name: Configure trusted height
   replace:
     path: /home/orai/.oraid/config/config.toml
-    regexp: 'trust_height = '
+    regexp: 'trust_height = 0'
     replace: 'trust_height = {{ blockData.json.result.block.header.height |int - 2000}}'
   tags: configure_state_sync_trust_height
 
@@ -88,7 +70,7 @@
 - name: Set min gas price
   replace:
     path: "{{ app_toml_path }}"
-    regexp: 'minimum-gas-prices = ""'
+    regexp: 'minimum-gas-prices = "0orai"'
     replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
   tags: configure_gas_price
 
@@ -116,14 +98,14 @@
 - name: Configure custom pruning
   replace:
     path: "{{ app_toml_path }}"
-    regexp: 'pruning-keep-recent = ""'
+    regexp: 'pruning-keep-recent = "0"'
     replace: 'pruning-keep-recent = "{{ pruning_keep_recent }}"'
   tags: configure_node_pruning
 
 - name: Configure pruning interval
   replace:
     path: "{{ app_toml_path }}"
-    regexp: 'pruning-interval = ""'
+    regexp: 'pruning-interval = "0"'
     replace: 'pruning-interval = "{{ pruning_interval }}"'
   tags: configure_node_pruning
 
@@ -133,11 +115,61 @@
     regexp: 'prometheus = false'
     replace: 'prometheus = {{ enable_prometheus | lower }}'
   tags: configure_metrics
-
 - name: Configure metrics listen address
   replace:
     path: "{{ config_toml_path }}"
     regexp: 'prometheus_listen_addr = ":26660"'
     replace: 'prometheus_listen_addr = "{{ prometheus_listen_addr }}"'
   tags: configure_metrics_listen_address
+- name: Configure EVM RPC HTTP listen address
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'address = "127.0.0.1:8545"'
+    replace: 'address = "{{ EVM_HTTP_listen_addr }}"'
+  tags: configure_evmrpc_listen_address
+- name: Configure EVM RPC WS listen address
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'address = "127.0.0.1:8546"'
+    replace: 'address = "{{ EVM_WS_listen_addr }}"'
+  tags: configure_evmws_listen_address
+- name: Configure EVM metrics listen address
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'metrics-address = "127.0.0.1:6065"'
+    replace: 'metrics-address = "{{ EVM_metrics_listen_addr }}"'
+  tags: configure_evm_metrics_listen_address
+- name: Configure grpc listen address
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'address = "localhost:9090"'
+    replace: 'address = "{{ grpc_listen_addr }}"'
+  tags: configure_grpc_listen_address
 
+- name: Configure api listen address
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'address = "tcp://localhost:1317"'
+    replace: 'address = "{{ api_listen_addr }}"'
+  tags: configure_api_listen_address
+
+- name: P2P listen address
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'laddr = "tcp://0.0.0.0:26656"'
+    replace: 'laddr = "{{ p2p_laddr }}"'
+  tags: configure_p2p_address
+
+- name: PPROF listen address
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'pprof_laddr = "localhost:6060"'
+    replace: 'pprof_laddr = "{{ pprof_laddr }}"'
+  tags: configure_pprof_address
+
+- name: JSON RPC listen address
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'laddr = "tcp://127.0.0.1:26657"'
+    replace: 'laddr = "{{ json_rpc_laddr }}"'
+  tags: configure_json_rpc_address
