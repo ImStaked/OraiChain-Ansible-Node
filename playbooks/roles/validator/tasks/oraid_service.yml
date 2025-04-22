@@ -22,6 +22,4 @@
     name: oraid
     state: started
   tags: oraid_restart
-- name: Write down the address and mnemonic
-  debug:
-    msg: "SAVE YOUR MNEMONIC: {{ admin_mnemonic.stdout_lines }}"
+

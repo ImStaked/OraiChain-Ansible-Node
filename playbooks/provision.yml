@@ -1,10 +1,9 @@
 ---
 - name: Provision
-  hosts: saturn
+  hosts: all
   gather_facts: yes
   become: yes
   roles:
-    - log
     - system
     - validator
   environment:

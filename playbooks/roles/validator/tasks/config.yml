@@ -17,15 +17,24 @@
     mode: u+rw
   tags: replace_config.toml
 
+- name: Create upgrade-info.json
+  copy:
+    src: templates/upgrade_info.json.j2
+    dest: "{{ oraid_HOME }}/data"
+    owner: orai
+    group: orai
+    mode: u+rw
+  tags: create upgrade-info.json
+
 - name: Get wasm data
   ansible.builtin.unarchive:
     src: https://snapshots.polkachu.com/wasm/orai/orai_wasmonly.tar.lz4
     dest: "{{ oraid_HOME }}"
     remote_src: yes
-  tags: wasm_download
+  tags: download_and_extract_wasm_data
 
-- name: Get block data
-  uri: 
+- name: Get latest block data
+  uri:
     url: https://oraichain-mainnet-rpc.itrocket.net:443/block
     method: GET
     return_content: yes
@@ -35,84 +44,88 @@
   # failed_when: <optional condition based on JSON returned content>
   tags: get_latest_block_data
 
-- name: Parse Response for block height
-  debug:
-    var: blockData.json[0].result.block.header.height
-  register: block_height
-  tags: get_latest_block_height
+- name: Enable state sync
+  replace:
+    path: /home/orai/.oraid/config/config.toml
+    regexp: 'enable = false'
+    replace: 'enable = {{ state_sync_enable | lower }}'
+  tags: enable_state_sync
 
-- name: Get Trusted Hash
-  uri: 
-    url: https://oraichain-mainnet-rpc.itrocket.net:443/block?height="{{ block_height | int - 2000}}"
-    method: GET
-    return_content: yes
-    status_code: 200
-    body_format: json
-  register: trustedHash
-  # failed_when: <optional condition based on JSON returned content>
-  tags: get_trusted_hash
+- name: Configure trusted height
+  replace:
+    path: /home/orai/.oraid/config/config.toml
+    regexp: 'trust_height = '
+    replace: 'trust_height = {{ blockData.json.result.block.header.height }}'
+  tags: configure_state_sync_trust_height
 
-- name: Configure State Sync
+- name: Configure trusted hash
+  replace:
+    path: /home/orai/.oraid/config/config.toml
+    regexp: 'trust_hash = ""'
+    replace: 'trust_hash = "{{ blockData.json.result.block_id.hash }}"'
+  tags: configure_state_sync_trusted_hash
+
+- name: Configure State Sync RPC
   replace:
     path: "{{ config_toml_path }}"
     regexp: 'rpc_servers = ""'
     replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://orai-rpc.polkachu.com:443,https://rpc-orai.blockval.io:443"'
-    regexp: 'trust_height ='
-    replace: 'trust_height = "{{ block_height | int - 2000 | quote}}"'
-    regexp: 'trust_hash = ""'
-    replace: 'trust_hash = ""{{ trustedHash | quote }}""'
-  tags: configure_state_sync
+  tags: configure_state_sync_rpc
 
 
-#
-#- name: Create a new key
-#  expect:
-#    command: "{{ oriad_binary_location|quote }}/lol keys add admin"
-#    responses:
-#      'Enter keyring passphrase:': "{{ admin_password }}"
-#      'Re-enter keyring passphrase:': "{{ admin_password }}"
-#  register: admin_mnemonic
+- name: Set min gas price
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'minimum-gas-prices = ""'
+    replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
+  tags: configure_gas_price
 
-#- name: recover key
-#  expect:
-#    command: "{{ oraid_binary_location|quote }} keys add admin --recover"
-#    responses:
-#      'Enter keyring passphrase:': "{{ admin_password }}"
-#      'Re-enter keyring passphrase:': "{{ admin_password }}"
-#      '> Enter your bip39 mnemonic': "{{ admin_mnemonic }}"
-#  ignore_errors: yes
-#  tags: fresh_node, import_admin_key
+- name: Add p2p-seeds
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'seeds = ""'
+    replace: 'seeds = "{{ p2p_seeds }}"'
+  tags: configure_p2p.seeds
 
-#- name: get admin wallet address
-#  expect:
-#    echo: true
-#    command: "{{ oraid_binary_location }} keys show admin -a"
-#    responses:
-#      'Enter keyring passphrase:': "{{ admin_password }}"
-#  register: admin_address
-#  tags: get_admin_address
+- name: Node indexer setting
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'indexer = "kv"'
+    replace: 'indexer = "{{ node_indexer | lower }}"'
+  tags: configure_node_indexer
 
-#- name: Set min gas price
-#  replace:
-#    path: "{{ app_toml_path }}"
-#    regexp: 'minimum-gas-prices = ""'
-#    replace: 'minimum-gas-prices = "{{ min_gas_prices }}"'
-#  tags: configure_gas_price
+- name: Change node pruning
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'pruning = "default"'
+    replace: 'pruning = "{{ pruning_type | lower }}"'
+  tags: configure_node_pruning
 
-#- name: Add p2p-seeds
-#  replace:
-#    path: "{{ config_toml_path }}"
-#    regexp: 'seeds = ""'
-#    replace: 'seeds = "{{ p2p_seeds }}"'
-#  tags: add_seeds
+- name: Configure custom pruning
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'pruning-keep-recent = ""'
+    replace: 'pruning-keep-recent = "{{ pruning_keep_recent }}"'
+  tags: configure_node_pruning
 
-#- name: Configure Pruning
-#  replace:
-#    path: "{{ app_toml_path }}"
-#    regexp: 'pruning = "default"''
-#    replace: 'pruning = "custom"'
-#    regexp: pruning-keep-recent = ""
-#    replace: pruning-keep-recent = "25000"
-#    regexp: pruning-interval = ""
-#    replace: pruning-interval = "10"
-#  tags: configure_custom_pruning
+- name: Configure pruning interval
+  replace:
+    path: "{{ app_toml_path }}"
+    regexp: 'pruning-interval = ""'
+    replace: 'pruning-interval = "{{ pruning_interval }}"'
+  tags: configure_node_pruning
+
+- name: Configure metrics
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'prometheus = false'
+    replace: 'prometheus = "{{ enable_prometheus | lower }}"'
+  tags: configure_metrics
+
+- name: Configure metrics listen address
+  replace:
+    path: "{{ config_toml_path }}"
+    regexp: 'prometheus_listen_addr = ":26660"'
+    replace: 'prometheus_listen_addr = "{{ prometheus_listen_addr }}"'
+  tags: configure_metrics_listen_address
+

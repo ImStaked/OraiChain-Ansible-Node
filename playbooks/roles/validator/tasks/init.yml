@@ -10,7 +10,7 @@
 - name: Download genesis file
   get_url:
     url: https://raw.githubusercontent.com/oraichain/oraichain-static-files/master/genesis.json
-    dest: "{{ orai_HOME }}/.oraid/config/genesis.json"
+    dest: "{{ orai_HOME }}/.oraid/config/"
     mode: '0440'
   tags: genesis_download
 
@@ -22,5 +22,18 @@
     group: orai
   tags: genesis_download
 
-- name: validate the genesis file
-  command: ""{{ oraid_binary_location }}" validate-genesis"
+- name: Create genesis dir for cosmovisor
+  ansible.builtin.file:
+    path: "{{ oraid_HOME }}/cosmovisor/genesis/bin"
+    state: directory
+    mode: '0755'
+
+- name: Create upgrades dir for cosmovisor
+  ansible.builtin.file:
+    path: "{{ oraid_HOME }}/cosmovisor/upgrades"
+    state: directory
+    mode: '0755'
+
+- name: Copy oraid to cosmovisor
+  ansible.builtin.command:
+    cmd: cp "{{orai_HOME }}/go/bin/oraid" "{{ orai_HOME }}/.oraid/cosmovisor/genesis/bin"

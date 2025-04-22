@@ -1,49 +1,24 @@
-- name: Show facts available on the system
-  ansible.builtin.debug:
-    var: ansible_facts
-
-#- name: create a directory
-#  file:
-#    path: "{{ orai_HOME }}/example"
-#    state: directory
-#    owner: "{{ _orai_validator_system_user }}"
-#    group: "{{ _orai_validator_system_group }}"
-#    mode: 0744
-#- name: Download a file
-#  get_url:
-#    url:
-#    dest: /tmp/checksums
-#- name: parse the file for checksums
-#  shell: grep linux-amd64 /tmp/checksums | sed '/^$/d' | sed -r 's/stuff//g' | tail -n 1
-#  register: checksum
-#  tags: checksums
-
-#- name: Download binary
-#  get_url:
-#    url: 
-#    dest: "/tmp/oraid"
-#    owner: "{{ _orai_validator_system_user }}"
-#    group: "{{ _orai_validator_system_group }}"
-#    mode: u+rwx
-#    checksum: "sha256: {{ checksum.stdout }}"
-  #failed_when: checksum = "b528aff8b9e76c91b76b1288cdc15d13fed6b868d8ff3b74460ea2061bacea9b"
-#  register: _download_binary
-#  until: _download_binary is succeeded
-#  retries: 5
-#  delay: 2
-#  check_mode: false
-
+---
 - name: clone wasmd repo
   git:
     repo: 'https://github.com/oraichain/wasmd'
-    dest: "{{ orai_HOME }}"
+    dest: "{{ orai_HOME }}/wasmd"
     version: "{{ orai_version }}"
 
 - name: Compile oraid binary
-  command: /usr/local/go/bin/go build -mod=readonly -tags "netgo,ledger" -ldflags '-X github.com/cosmos/cosmos-sdk/version.Name=orai -X github.com/cosmos/cosmos-sdk/version.AppName=oraid -X github.com/cosmos/cosmos-sdk/version.Version=0.50.10 -X github.com/cosmos/cosmos-sdk/version.Commit=4e1eea4b0ce0f0c94ace7beb0d3e816c9cb22807 -X github.com/CosmWasm/wasmd/app.Bech32Prefix=orai -X "github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger"' -trimpath -o build/oraid ./cmd/wasmd && mkdir -p /home/orai/go/bin && mv build/oraid /home/orai/go/bin/oraid
-
+  command: /usr/local/go/bin/go build -mod=readonly -tags "netgo,ledger" -ldflags '-X github.com/cosmos/cosmos-sdk/version.Name=orai -X github.com/cosmos/cosmos-sdk/version.AppName=oraid -X github.com/cosmos/cosmos-sdk/version.Version=0.50.10 -X github.com/cosmos/cosmos-sdk/version.Commit=4e1eea4b0ce0f0c94ace7beb0d3e816c9cb22807 -X github.com/CosmWasm/wasmd/app.Bech32Prefix=orai -X "github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger"' -trimpath -o build/oraid ./cmd/wasmd
   args:
-    chdir: "{{ orai_HOME }}"
-    creates: "{{ orai_HOME }}/"
+    chdir: "{{ orai_HOME }}/wasmd"
+    creates: /home/orai/oraid"
   tags: compile_and_install_binary
 
+- name: move oraid binary to go/bin
+  ansible.builtin.command:
+    cmd: mv /home/orai/wasmd/build/oraid /home/orai/go/bin/oraid
+
+- name: Install cosmovissor
+  command: /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
+  args:
+    chdir: "{{ orai_HOME }}/go/bin"
+    creates: $HOME/go/bin/cosmovisor"
+  tags: install_cosmovisor
