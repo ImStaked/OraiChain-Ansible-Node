@@ -55,14 +55,26 @@
   replace:
     path: /home/orai/.oraid/config/config.toml
     regexp: 'trust_height = '
-    replace: 'trust_height = {{ blockData.json.result.block.header.height }}'
+    replace: 'trust_height = {{ blockData.json.result.block.header.height |int - 2000}}'
   tags: configure_state_sync_trust_height
+
+
+- name: Get block data at trusted height
+  uri:
+    url: https://oraichain-mainnet-rpc.itrocket.net:443/block?height="{{ blockData.json.result.block.header.height |int - 2000}}"
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: trustedHeightData
+  # failed_when: <optional condition based on JSON returned content>
+  tags: get_trusted_height_block_data
 
 - name: Configure trusted hash
   replace:
     path: /home/orai/.oraid/config/config.toml
     regexp: 'trust_hash = ""'
-    replace: 'trust_hash = "{{ blockData.json.result.block_id.hash }}"'
+    replace: 'trust_hash = "{{ trustedHeightData.json.result.block_id.hash }}"'
   tags: configure_state_sync_trusted_hash
 
 - name: Configure State Sync RPC
