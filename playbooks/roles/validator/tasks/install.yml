@@ -2,19 +2,19 @@
 - name: clone wasmd repo
   git:
     repo: 'https://github.com/oraichain/wasmd'
-    dest: "{{ orai_HOME }}/wasmd"
+    dest: /tmp/wasmd
     version: "{{ orai_version }}"
 
-- name: Compile oraid binary
-  command: /usr/local/go/bin/go build -mod=readonly -tags "netgo,ledger" -ldflags '-X github.com/cosmos/cosmos-sdk/version.Name=orai -X github.com/cosmos/cosmos-sdk/version.AppName=oraid -X github.com/cosmos/cosmos-sdk/version.Version=0.50.10 -X github.com/cosmos/cosmos-sdk/version.Commit=4e1eea4b0ce0f0c94ace7beb0d3e816c9cb22807 -X github.com/CosmWasm/wasmd/app.Bech32Prefix=orai -X "github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger"' -trimpath -o build/oraid ./cmd/wasmd
-  args:
-    chdir: "{{ orai_HOME }}/wasmd"
-    creates: /home/orai/oraid"
-  tags: compile_and_install_binary
+- name: Run 'install' target to compile
+  community.general.make:
+    chdir: "/tmp/wasmd"
+    target: install
+  become: true
+  tags: fetch_build
 
-- name: move oraid binary to go/bin
-  ansible.builtin.command:
-    cmd: mv /home/orai/wasmd/build/oraid /home/orai/go/bin/oraid
+#- name: move oraid binary to go/bin
+#  ansible.builtin.command:
+#    cmd: mv /home/orai/wasmd/build/oraid /home/orai/go/bin/oraid
 
 - name: Install cosmovissor
   command: /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
