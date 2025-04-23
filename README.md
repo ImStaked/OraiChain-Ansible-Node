@@ -1,6 +1,8 @@
 # Oraichain-Ansible-Node
 
-### Prerequsites
+## Prerequsites
+- At minimum 2 hosts, the Ansible host and the Remote host to provision
+  
 - Ansible  
   ```
   pipx install ansible-core
@@ -14,7 +16,7 @@
   ssh-copy-id -i ~/.ssh/ed25519 user@remotehost
   ```
 
-### Important Files
+## Important Files
 - Inventory contains the IP address or addresses to act upon
   ```
   config/inventory.yml
@@ -29,7 +31,7 @@
   playbooks/roles/validator/defaults/main.yml
   ```
   
-### Instructions
+## Instructions
 - Clone this repo
   ```
   git clone https://github.com/ImStaked/OraiChain-Ansible-Node.git
