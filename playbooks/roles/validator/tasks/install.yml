@@ -34,18 +34,12 @@
 - name: Run build target to compile
   community.general.make:
     chdir: "{{ local_checkout_dir | quote }}"
-    target: build
+    target: install
     file: "{{ local_checkout_dir | quote }}/Makefile"
     params:
       make: /usr/bin/make
   tags: oraid_build
 
-#- name: Install cosmovissor
-#  command: /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
-#  args:
-#    chdir: "{{ orai_HOME | quote }}/go/bin"
-#    creates: $HOME/go/bin/cosmovisor"
-#  tags: install_cosmovisor
 
 #- name: Change ownership of orai user home
 #  command: chown -R orai:orai /home/orai

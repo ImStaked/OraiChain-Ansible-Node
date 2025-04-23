@@ -19,11 +19,6 @@
   ansible.builtin.package:
     name: gcc
     state: present
-#- name: Prepare GO upgrade
-#  file:
-#    path: /usr/local/go
-#    state: absent
-#  tags: - remove_go
 
 - name: Create go/bin directory
   ansible.builtin.file:

@@ -1,6 +1,6 @@
 ---
 - name: Install cosmovissor
-  command: /usr/local/go/bin/go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.5.0
+  command: /usr/local/go/bin/go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.7.1
   become: true
   become_user: orai
   args:
@@ -9,7 +9,7 @@
   tags: install_cosmovisor
 
 - name: Init oraid
-  command: "{{ oraid_binary_location|quote }} init {{ moniker|quote }} --chain-id {{ chain_id|quote }}"
+  command: /home/orai/go/bin/oraid init "{{ moniker|quote }}" --chain-id "{{ chain_id|quote }}"
   args:
     creates: "{{ orai_HOME }}/.oraid"
   # skipping errors now for the ease of testing ... 
@@ -43,10 +43,14 @@
 
 - name: Create upgrades dir for cosmovisor
   ansible.builtin.file:
-    path: "{{ oraid_HOME }}/cosmovisor/upgrades"
+    path: "{{ oraid_HOME }}/cosmovisor/upgrades/v0.50.10/bin"
     state: directory
     mode: '0755'
 
 - name: Copy oraid to cosmovisor
   ansible.builtin.command:
-    cmd: cp "{{orai_HOME }}/go/bin/oraid" "{{ orai_HOME }}/.oraid/cosmovisor/genesis/bin"
+    cmd: cp "{{ oraid_binary_location }}" "{{ orai_HOME }}/.oraid/cosmovisor/genesis/bin/oraid"
+
+- name: Copy oraid to cosmovisor
+  ansible.builtin.command:
+    cmd: cp "{{ oraid_binary_location }}"  "{{ orai_HOME }}/.oraid/cosmovisor/upgrades/v0.50.10/bin/oraid"
