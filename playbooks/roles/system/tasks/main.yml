@@ -20,6 +20,16 @@
     name: gcc
     state: present
 
+- name: Install make
+  ansible.builtin.package:
+    name: make
+    state: present
+
+- name: Install jq
+  ansible.builtin.package:
+    name: jq
+    state: present
+    
 - name: Create go/bin directory
   ansible.builtin.file:
     path: "{{ oraid_binary_path }}"
