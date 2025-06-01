@@ -17,7 +17,7 @@
 
 - name: Get latest block data
   uri:
-    url: https://oraichain-mainnet-rpc.itrocket.net:443/block
+    url: https://orai-rpc.polkachu.com:443/block
     method: GET
     return_content: yes
     status_code: 200
@@ -43,7 +43,7 @@
 
 - name: Get block data at trusted height
   uri:
-    url: https://oraichain-mainnet-rpc.itrocket.net:443/block?height="{{ blockData.json.result.block.header.height |int - 2000}}"
+    url: https://orai-rpc.polkachu.com:443/block?height="{{ blockData.json.result.block.header.height |int - 2000}}"
     method: GET
     return_content: yes
     status_code: 200
@@ -63,7 +63,7 @@
   replace:
     path: "{{ config_toml_path }}"
     regexp: 'rpc_servers = ""'
-    replace: 'rpc_servers = "https://oraichain-mainnet-rpc.itrocket.net:443,https://orai-rpc.polkachu.com:443,https://rpc-orai.blockval.io:443"'
+    replace: 'rpc_servers = "https://orai-rpc.polkachu.com:443,https://orai-rpc.polkachu.com:443,https://rpc-orai.blockval.io:443"'
   tags: configure_state_sync_rpc
 
 
