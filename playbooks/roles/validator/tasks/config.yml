@@ -63,7 +63,7 @@
   replace:
     path: "{{ config_toml_path }}"
     regexp: 'rpc_servers = ""'
-    replace: 'rpc_servers = "https://orai-rpc.polkachu.com:443,https://orai-rpc.polkachu.com:443,https://rpc-orai.blockval.io:443"'
+    replace: 'rpc_servers = "https://rpc.orai.io:443,https://orai-rpc.polkachu.com:443"'
   tags: configure_state_sync_rpc
 
 
